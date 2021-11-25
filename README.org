@@ -1,10 +1,23 @@
 * Project Review
-  This is a repository created for the subject 'Project Review 1'
-** Members
-  We need to add our GitHub usernames here
+  NAME is a cli-app which can take a meeting recording(as mp4) as input and process to remove disturbances,
+  and lobby scenes in the video.
+  It uses tensorflow and [[https://pypi.org/project/unsilence/][unsilence]] to product a shortened more concise video.
+** Working
+   Right now there is no user-friendly version of the app . It is built on multiple scripts .
+   The model used in sorting between the lobby and non-lobby scenes is trained on data from multiple meetings.
+   This data is varied and mostly taken from meetings conducted on Microsoft Teams.
+** Data
+   Currently data is divided between 2 categories of lobby/non-lobby pictures.We have not made the data public
+** Stages of Project
+   There are two stages of the project currently.
+*** First Stage
+    In this stage we classify wether the clip is a lobby or not.
+*** Second Stage
+    In this stage we remove the silent parts from the video.
+    We use the unsilence for this.
+** Installation
+   This currently requires installation of tensorflow 2.1 and unsilence.
+   /unsilence/ currently requires working installation of ffmpeg.
+** Contributors
   * [[https://github.com/Chahakgarg][Chahakgarg]]
   * [[https://github.com/pspiagicw][pspiagicw]]
-** Ideas
-  We can list our Ideas here , just open a issue or issue a PR.
-** Roadmap
-  After selecting Idea , we can design the roadmap , along with the coding deadlines.
