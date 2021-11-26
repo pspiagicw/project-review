@@ -1,23 +1,175 @@
+#+title: Project Review Stage 2
+#+author: pspiagicw
+#+date: <2021-11-27 Sat>
 * Project Review
   NAME is a cli-app which can take a meeting recording(as mp4) as input and process to remove disturbances,
   and lobby scenes in the video.
-  It uses tensorflow and [[https://pypi.org/project/unsilence/][unsilence]] to product a shortened more concise video.
+  It uses tensorflow/keras and [[https://pypi.org/project/unsilence/][unsilence]] to product a shortened more concise video.
 ** Working
    Right now there is no user-friendly version of the app . It is built on multiple scripts .
    The model used in sorting between the lobby and non-lobby scenes is trained on data from multiple meetings.
    This data is varied and mostly taken from meetings conducted on Microsoft Teams.
 ** Data
    Currently data is divided between 2 categories of lobby/non-lobby pictures.We have not made the data public
-** Stages of Project
+** Pipeline of the project.
    There are two stages of the project currently.
-*** First Stage
-    In this stage we classify wether the clip is a lobby or not.
-*** Second Stage
+*** Module/Pipeline 1
+    In this stage we remove the lobby part of the meeting.
+    Reason ?
+    In more than one occasion we have observed fruitless meeting being continued due to inactive members not logging off.
+
+**** Ways to do this ?
+***** Rolling Prediction Averaging
+     This  method is documented  [[https://www.pyimagesearch.com/2019/07/15/video-classification-with-keras-and-deep-learning/][here]]. This method is called /Rolling Prediction Averaging/. 
+     
+     This method uses a machine learning model to predict a single frame.But how does it help us predict a video clip ?
+     Simple we loop over each frame and predict it's state. We store the results in a efficient data structure(Array).
+     The original article suggests using probablity functions and more real-world applied functions to obtain a majority of the predictions.
+     This approach is abandoned because
+     - The given article considers non-binary classification which might require comprehensive investigation.
+     - The given article also has a much broader and more complicated task at hand(Classifying Sports Scenes).
+***** Scene Change Detection
+     
+      This approach uses the difference between the pixels to calculate a scene change.
+      This method is documented [[https://tarhang.medium.com/machine-learning-for-automatic-video-summary-generation-8a62d35105c6][here]].
+
+      This method calculates the difference is pixel values.
+
+      $$
+      \sum_{image} | f_{t}(i,j) - f_{t+1}(i,j) |
+      $$
+
+      Where $ f_{t}(i,j) $ means pixel value at ~(i,j)~ at time ~t~. This can also be taken as first derivative of the frames.
+      This method is quite elegant and can work where same types of scenes are depicted frequently. Example
+      Bowling , Fielding and Audience shots are quite common in Cricket.
+
+      The drawbacks with this method is that it interprets any change as positive/negative. It cannot classify between types of changes.
+      It also requires a lot of computing power.
+
+      
+**** Our approach
+
+     Our approach is modeled after /Rolling Prediction Averaging/.
+     
+     Like we said we use a dataset containing multiple images of lobby and non-lobby.
+     We trained a model using a Convolutional Neural Network.The model consists of the following structure.
+
+     While training we resize the image from original size of 1920x1080 to 800x600 , thus reducing the memory and processing power needed.
+     We also introduce data augmentation methods like /Random Rotation/ , /Zoom Range/ , /Horizontal Flips/ and /Vertical Flip/.
+     We also rescale the inputs (Image of 800x600 with each pixel represented by a RGB value from 0-255) to 0-1.This decreases the time
+     needed to converge the model to a appropriate.
+
+     - Conv Layer with 64 filters and kernel size of (3,3).
+     - MaxPool Layer with pool size of (2,2)
+     - Conv Layer with 32 filters and kernel size of (3,3).
+     - Dense Layer with 25 neurons with activation layer of relu.
+     - Dense layer with 1 neuron with activation layer of sigmoid.
+
+       The summary of the model is given below.
+
+       #+begin_src  txt
+ Model: "sequential"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ conv2d (Conv2D)             (None, 798, 598, 64)      1792      
+                                                                 
+ max_pooling2d (MaxPooling2D  (None, 399, 299, 64)     0         
+ )                                                               
+                                                                 
+ conv2d_1 (Conv2D)           (None, 397, 297, 32)      18464     
+                                                                 
+ flatten (Flatten)           (None, 3773088)           0         
+                                                                 
+ dense (Dense)               (None, 25)                94327225  
+                                                                 
+ dense_1 (Dense)             (None, 2)                 52        
+                                                                 
+=================================================================
+Total params: 94,347,533
+Trainable params: 94,347,533
+Non-trainable params: 0
+_________________________________________________________________
+    #+end_src
+    
+    We trained the model for a standard 10 epochs.The validation accuracy is much higher than the training accuracy ,
+    which suggests our model is doing quite well , although the fluctuations the the val_loss suggests,
+    our model has high variance.
+
+     #+begin_src txt
+Epoch 1/10
+11/11 [==============================] - 82s 2s/step - loss: 8.1930 - acc: 0.6641 - val_loss: 52.3021 - val_acc: 0.9333
+Epoch 2/10
+11/11 [==============================] - 19s 2s/step - loss: 0.8413 - acc: 0.7656 - val_loss: 41.2121 - val_acc: 0.9333
+Epoch 3/10
+11/11 [==============================] - 19s 2s/step - loss: 0.5084 - acc: 0.8516 - val_loss: 149.6517 - val_acc: 0.9333
+Epoch 4/10
+11/11 [==============================] - 19s 2s/step - loss: 0.6390 - acc: 0.8125 - val_loss: 335.2040 - val_acc: 0.9333
+Epoch 5/10
+11/11 [==============================] - 19s 2s/step - loss: 0.4093 - acc: 0.8594 - val_loss: 0.2772 - val_acc: 1.0000
+Epoch 6/10
+11/11 [==============================] - 19s 2s/step - loss: 0.2792 - acc: 0.8672 - val_loss: 28.2472 - val_acc: 0.9333
+Epoch 7/10
+11/11 [==============================] - 19s 2s/step - loss: 0.2057 - acc: 0.9219 - val_loss: 79.6625 - val_acc: 0.9333
+Epoch 8/10
+11/11 [==============================] - 19s 2s/step - loss: 0.1280 - acc: 0.9844 - val_loss: 154.7676 - val_acc: 0.9333
+Epoch 9/10
+11/11 [==============================] - 19s 2s/step - loss: 0.1033 - acc: 0.9688 - val_loss: 224.8701 - val_acc: 0.9333
+Epoch 10/10
+11/11 [==============================] - 19s 2s/step - loss: 0.0519 - acc: 0.9766 - val_loss: 360.1419 - val_acc: 0.9333
+<keras.callbacks.History at 0x7f6afe5c6cd0>
+     #+end_src
+
+     How do we end up predicting the scene ?
+     We take a clip and extract frames from the video , we classify the frames and store all previous results.
+     We then take the maximum and decide if the video is lobby or not.
+
+     The entire code is available on GitHub [[https://github.com/pspiagicw/project-review][here]].
+**** Problems in our approach
+     Like every approach this is having drawbacks they are listed below
+     
+     - Currently our data is limited to meeting conducted inside Microsoft Teams.
+       And because of uniformity of teaching between faculties there is less variety
+       between /presentation/ screenshots. Thus increasing our models variance.
+       Thus our model might perform poor when the dataset is changed to include
+       data from other Meeting platforms (Zoom , Google Meet , Jitsi , Discord etc)
+       
+     - Our approach requires a lot of frames to be processes.Currently we are processing every frame of the video.
+       But in larger and larger videos the number of frames are humongous thus leading of large amount of calculation.
+       This can be tacked with clever selection of frames.
+
+     - Our approach requires the model to be executed , thus requiring Tensorflow and Keras to be installed on the system.
+       We can tackle this problem by exporting the model to other formats.
+     
+*** Module/Pipeline 2
     In this stage we remove the silent parts from the video.
-    We use the unsilence for this.
-** Installation
-   This currently requires installation of tensorflow 2.1 and unsilence.
-   /unsilence/ currently requires working installation of ffmpeg.
+    This area has been researched quite a bit.
+**** Ways of doing this ?
+***** SUVing by Mark Greenwood , Andrew Kinghorn
+      This method has been explained in our presentation in quite detail.But for the sake of this explanation this is explained again
+***** Using VOSK API by Dmytro Nikoliev
+      This method has been documented [[https://towardsdatascience.com/automatic-video-editing-using-python-324e5efd7eba][here]].
+      This method calculates the no of words spoken per minute and classify it as a voiced clip if more than a certain threshold.
+
+      It uses the open-source voice recognition engine VOSK to do this.
+      It is also designed to be used in a controled environment with words which have syntactical meaning. More clarification can be obtained from
+      reading the given material.
+
+      The drawbacks of this method include
+      - Installation of the VOSK API and language models
+      - Requiring clear speech and only English words , which is not possible in a Online class which is bound to have
+	background noises , interruptions and random interactions in native languages like Hindi , Bengali etc.
+***** Using existing solutions
+      This is by far the most easy and cheap method for doing this. Luckily the open-source Video encoder and decoder ffmpeg already has support
+      for detecting silences. But the entire interface is written to be used in C++
+
+      Luckily the package ~unsilenced~ wraps the entire functionality into a simple import. It is also a standalong command line app to remove silence from the video.
+      The link to it can be found [[https://pypi.org/project/unsilence/][here]].
+
+      The drawbacks include
+      - We are limited to the author's custom implementation of removing silence.
+      - Everyone needs ffmpeg installed including the user to detect silence.
+
 ** Contributors
   * [[https://github.com/Chahakgarg][Chahakgarg]]
   * [[https://github.com/pspiagicw][pspiagicw]]
