@@ -2,7 +2,7 @@
 #+author: pspiagicw
 #+date: <2021-11-27 Sat>
 * Project Review
-  NAME is a cli-app which can take a meeting recording(as mp4) as input and process to remove disturbances,
+  shortify is a cli-app which can take a meeting recording(as mp4) as input and process to remove disturbances,
   and lobby scenes in the video.
   It uses tensorflow/keras and [[https://pypi.org/project/unsilence/][unsilence]] to product a shortened more concise video.
 ** Working
