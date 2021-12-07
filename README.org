@@ -1,6 +1,11 @@
 #+title: Project Review Stage 2
 #+author: pspiagicw
 #+date: <2021-11-27 Sat>
+* Installation Instructions
+To run this project you currently only need a working tensorflow installation or use the docker image from tensorflow. GPU support enabled would speed up the training process. Thus it is recommended.
+
+You can run the notebook inside a normal notebook engine like Jupyter Notebook , Jupyter Lab or Google Colab/Kaggle Notebooks. It expects you already have the data.
+
 * Project Review
   shortify is a cli-app which can take a meeting recording(as mp4) as input and process to remove disturbances,
   and lobby scenes in the video.
