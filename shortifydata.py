@@ -1,8 +1,13 @@
 from random import random
 from tabulate import tabulate
 from colorama import Fore , Back , Style
+from keras.models import load_model
+import cv2
 def getStatus(picture , pixel_differenciation = False):
-    return random() > 0.5
+    model = load_model('model')
+    resized_image = cv2.resize(picture , (800 , 600))
+    status = model.predict([resized_image])
+    return status[0] > 0.5
 def analyzeTimings(timings , fps , interval):
     analyzedtimings = list()
     previous = False
