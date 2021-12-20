@@ -25,12 +25,13 @@ if __name__ == '__main__':
     postprocessing_dir = getPostFilePath(filename)
 
 
-    timings , seconds = getTimings(filename , int(fps) , int(interval))
+
+    timings , seconds , frame_counter = getTimings(filename , int(fps) , int(interval))
 
 
     starts , ends = analyzeTimings(timings , int(fps) , int(interval))
 
-    prettyPrintSeconds(seconds  , [i for i in zip(starts , ends)] , fps)
+    prettyPrintSeconds(seconds  , [i for i in zip(starts , ends)] , fps , frame_counter)
 
     print("The output file will be called output.mp4!")
     time.sleep(5)

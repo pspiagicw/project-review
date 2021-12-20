@@ -29,6 +29,7 @@ def getTimings(filename  , fps , interval):
     clips = list()
     counter = 0
     seconds = 0
+    frame_counter = 0
     while True:
         ret , frame = video.read()
         if ret == False:
@@ -36,10 +37,11 @@ def getTimings(filename  , fps , interval):
         if counter % fps == 0:
             if seconds % interval == 0:
                 clips.append((getStatus(frame) , seconds))
+                frame_counter += 1
             seconds += 1
         counter += 1
     video.release()
-    return clips , seconds
+    return clips , seconds , frame_counter
 def clipVideo(sourcepath , starts , ends , filepath):
     video = VideoFileClip(sourcepath)
     for i , (start , end) in enumerate(zip(starts , ends)):
