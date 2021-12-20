@@ -1,0 +1,10 @@
+from unsilence import Unsilence
+
+u = Unsilence(r"G:\Captures\demo.mp4")
+
+u.detect_silence()
+
+estimated_time = u.estimate_time(audible_speed=2, silent_speed=1)  # Estimate time savings
+print(estimated_time)
+
+u.render_media(r"DEMO VIDEO  .mp4", audible_volume=5, silent_volume=1)  # No options specified
