@@ -6,14 +6,22 @@ import os
 from shortifydata import *
 from moviepy.editor import *
 from unsilence import Unsilence
+from tqdm import tqdm
 
 def getInputs():
     filename = prompt('Enter the filename[mp4]: ')
-    print(filename)
-    frames_per_second = prompt('Enter the fps to consider[default(30)]: ')
-    print(frames_per_second)
-    interval = prompt('Enter interval between checks: ')
-    print(interval)
+    print('Using File: {}'.format(filename))
+    frames_per_second = prompt('Enter the fps to consider[default(24)]: ')
+    if frames_per_second == '':
+        frames_per_second = 24
+    print('Using Frames Per Second: {}'.format(frames_per_second))
+    interval = prompt('Enter interval between checks[default(15)]: ')
+    if interval == '':
+        interval = 15
+    print('Using Interval: {}'.format(interval))
+    if not os.path.isfile(filename):
+        print("File {} does not exist!".format(filename))
+        exit(1)
     return filename , frames_per_second , interval
 
 def getTimings(filename  , fps , interval):
@@ -31,11 +39,9 @@ def getTimings(filename  , fps , interval):
             seconds += 1
         counter += 1
     video.release()
-    return clips
+    return clips , seconds
 def clipVideo(sourcepath , starts , ends , filepath):
     video = VideoFileClip(sourcepath)
-    # print(starts , ends)
-    # print(zip(starts , ends))
     for i , (start , end) in enumerate(zip(starts , ends)):
         clip = video.subclip(start , end)
         savepath = os.path.join(filepath ,str(i) + '.mp4')
@@ -57,7 +63,7 @@ def getPostFilePath(filename):
 
 def silenceClips(filepath , outputPath):
     files = sorted(os.listdir(filepath))
-    for i , file in enumerate(files):
+    for i , file in tqdm(enumerate(files)):
          filename = os.path.join(filepath , file)
          u = Unsilence(filename)
          u.detect_silence()
