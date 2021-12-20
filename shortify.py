@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     prettyPrintSeconds(seconds  , [i for i in zip(starts , ends)] , fps)
 
+    print("The output file will be called output.mp4!")
     time.sleep(5)
 
     clipVideo(filename , starts , ends , preprocessing_dir )
