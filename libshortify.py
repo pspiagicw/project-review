@@ -5,6 +5,7 @@ import hashlib
 import os
 from shortifydata import *
 from moviepy.editor import *
+from unsilence import Unsilence
 
 def getInputs():
     filename = prompt('Enter the filename[mp4]: ')
@@ -33,7 +34,9 @@ def getTimings(filename  , fps , interval):
     return clips
 def clipVideo(sourcepath , starts , ends , filepath):
     video = VideoFileClip(sourcepath)
-    for i , start , end in enumerate(zip(starts , ends)):
+    # print(starts , ends)
+    # print(zip(starts , ends))
+    for i , (start , end) in enumerate(zip(starts , ends)):
         clip = video.subclip(start , end)
         savepath = os.path.join(filepath ,str(i) + '.mp4')
         clip.write_videofile(savepath)
@@ -55,9 +58,12 @@ def getPostFilePath(filename):
 def silenceClips(filepath , outputPath):
     files = sorted(os.listdir(filepath))
     for i , file in enumerate(files):
-         u = Unsilence(file)
-         file_save_location = os.path.join(outputPath , file + '.mp4')
-         u.render_media(save_file_location , silent_volume = 4 , audible_volume = 7)
+         filename = os.path.join(filepath , file)
+         u = Unsilence(filename)
+         u.detect_silence()
+         u.estimate_time(audible_speed=2, silent_speed=1)  # Estimate time savings
+         file_save_location = os.path.join(outputPath , file)
+         u.render_media(file_save_location , silent_volume = 4 , audible_volume = 7)
 def combineClips(inputPath):
     files = sorted(os.listdir(inputPath))
     final_clip = concatenate_videoclips([
