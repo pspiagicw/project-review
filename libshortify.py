@@ -65,7 +65,7 @@ def getPostFilePath(filename):
 
 def silenceClips(filepath , outputPath):
     files = sorted(os.listdir(filepath))
-    for i , file in tqdm(enumerate(files)):
+    for i , file in enumerate(files):
          filename = os.path.join(filepath , file)
          u = Unsilence(filename)
          u.detect_silence()

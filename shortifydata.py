@@ -4,6 +4,7 @@ from colorama import Fore , Back , Style
 from tensorflow.keras.models import load_model
 import cv2
 import numpy as np
+import time
 def getStatus(picture , pixel_differenciation = False):
     model = load_model('model')
     resized_image = cv2.resize(picture , (600 , 800))
